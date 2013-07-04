@@ -1,4 +1,4 @@
 text-js
 =======
 
-This is an experimental ASSCI map framework
+This is an experimental ASCII map framework
