@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Text-JS</title>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+		<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css"/>
+	
+		<style type="text/css">
+		
+			#divMap{
+				font-family: monospace;
+			}
+		
+		</style>
+	
+	
+		<script type="text/javascript">
+		
+		var $ = jQuery;
+		
+		var DEBUG = true;
+		
+		var Utils = {
+		
+			getRandomInt: function(min, max) {
+			    return Math.floor(Math.random() * (max - min + 1)) + min;
+			}
+			
+		};
+		
+		
+		var MoveHandlers = {
+			
+			keydown: function(e){
+				if(DEBUG){
+					//console.debug(e.which);
+				}
+				
+				switch(e.which){
+					case 37: //left
+						GameEngine.keyState[0] = true;
+						break;
+					case 38: //up
+						GameEngine.keyState[1] = true;
+						break;
+					case 39: //right
+						GameEngine.keyState[2] = true;
+						break;
+					case 40: //down
+						GameEngine.keyState[3] = true;
+						break;
+					default:
+						break;
+				}
+			},
+		
+			keyup: function(e){
+			
+			
+				switch(e.which){
+					case 37: //left
+						GameEngine.keyState[0] = false;
+						break;
+					case 38: //up
+						GameEngine.keyState[1] = false;
+						break;
+					case 39: //right
+						GameEngine.keyState[2] = false;
+						break;
+					case 40: //down
+						GameEngine.keyState[3] = false;
+						break;
+					default:
+						break;
+				}
+			}
+		
+		};
+		
+		var WorldMap = {
+		
+			width: 80,
+			height: 30,
+			
+			mapMask: [],
+			map: [],
+			
+			tiles: [",","-","~"],
+			
+			init: function(){
+				for(var i=0;i < this.height;i++){
+					this.map.push([]);
+					this.mapMask.push([]);
+					for(var j=0;j < this.width;j++){
+						this.map[i].push(Utils.getRandomInt(0,this.tiles.length-1));
+						this.mapMask.push(0);
+					}
+				}
+			},
+			
+			drawMap: function(){
+				var mapString = "";
+				for(var i=0;i < this.map.length;i++){
+					for(var j=0;j < this.map[i].length;j++){
+						mapString += this.tiles[this.map[i][j]];
+					}
+					mapString += "<br/>";
+				}
+				$("#divMap").html(mapString);
+			}
+		
+		};
+		
+		var GameEngine = {
+		
+			keyState: [false,false,false,false],
+		
+			init: function(){
+				if(DEBUG){
+					console.debug("Game starting");
+					this.gameLoop();
+				}
+			},
+		
+			gameLoop: function(){
+				for(var i=0;i < this.keyState.length; i++){
+					if(this.keyState[i]){
+						console.debug(i);
+					}
+				}
+				window.setTimeout("GameEngine.gameLoop()",1000);
+			}
+		
+		};
+		
+		$(document).ready(function(){
+			$('#divMain').append("<h4>Welcome to the world<\/h4>");
+			
+			$(document).on('keydown', MoveHandlers.keydown);
+			$(document).on('keyup', MoveHandlers.keyup);
+			
+			WorldMap.init();
+			WorldMap.drawMap();
+			
+			GameEngine.init();
+		});
+		
+		</script>
+	</head>
+	<body>
+		<div id='divMain'>
+			<div id='divMessages'>
+			
+			</div>
+			<div id='divMap'>
+			
+			</div>
+		</div>
+	</body>
+</html>
