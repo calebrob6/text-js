@@ -8,8 +8,31 @@
 	
 		<style type="text/css">
 		
+			#divWrapper{
+				margin: auto;
+				width: 700px;
+				padding: 20px 0 0 220px;
+				position: relative;
+			}
+			
 			#divMap{
 				font-family: monospace;
+				position: relative;
+				overflow: hidden;
+				height: 700px;
+			}
+			
+			#divMessageWrapper{
+				position: absolute;
+				top: 20px;
+				left: 0px;
+				height: 700px;
+				width: 200px;
+				overflow: hidden;
+			}
+			
+			#divClear{
+				clear:both;
 			}
 		
 		</style>
@@ -29,30 +52,70 @@
 			
 		};
 		
+		var Player = {
+		
+			x: 5,
+			y: 5,
+			name: "Player",
+			moveSpeed: 1
+		};
 		
 		var MoveHandlers = {
 			
+			movePlayer: function(dir){
+			
+				if(dir=='left'){
+					if(Player.x-Player.moveSpeed >= 0){
+						Player.x-=Player.moveSpeed;
+					}
+				}else if(dir=='up'){
+					if(Player.y-Player.moveSpeed >= 0){
+						Player.y-=Player.moveSpeed;
+					}
+				}else if(dir=='right'){
+					if(Player.x+Player.moveSpeed < WorldMap.width){
+						Player.x+=Player.moveSpeed;
+					}
+				}else if(dir=='down'){
+					if(Player.y+Player.moveSpeed < WorldMap.height){
+						Player.y+=Player.moveSpeed;
+					}
+				}
+			
+			},
+			
+			//Be careful with the this keyword in the keydown and keyup functions, they are used in the context of the html document because they are used as the function in a jQuery call 
 			keydown: function(e){
 				if(DEBUG){
 					//console.debug(e.which);
 				}
-				
+
 				switch(e.which){
 					case 37: //left
+						MoveHandlers.movePlayer("left");
 						GameEngine.keyState[0] = true;
+						GameEngine.postMessage("Moving left");
 						break;
 					case 38: //up
+						MoveHandlers.movePlayer("up");
 						GameEngine.keyState[1] = true;
+						GameEngine.postMessage("Moving up");
 						break;
 					case 39: //right
+						MoveHandlers.movePlayer("right");
 						GameEngine.keyState[2] = true;
+						GameEngine.postMessage("Moving right");
 						break;
 					case 40: //down
+						MoveHandlers.movePlayer("down");
 						GameEngine.keyState[3] = true;
+						GameEngine.postMessage("Moving down");
 						break;
 					default:
 						break;
 				}
+				
+				e.preventDefault();
 			},
 		
 			keyup: function(e){
@@ -103,7 +166,13 @@
 				var mapString = "";
 				for(var i=0;i < this.map.length;i++){
 					for(var j=0;j < this.map[i].length;j++){
-						mapString += this.tiles[this.map[i][j]];
+					
+						if(Player.y == i && Player.x == j){
+							mapString += "P";
+						}else{
+							mapString += this.tiles[this.map[i][j]];
+						}
+						
 					}
 					mapString += "<br/>";
 				}
@@ -122,20 +191,32 @@
 					this.gameLoop();
 				}
 			},
+			
+			postMessage: function(message){
+				$('#divMessages').prepend($("<span class='message'>"+message+"<\/span><br\/>").hide().fadeIn(1000).fadeOut(10000));
+			},
 		
 			gameLoop: function(){
-				for(var i=0;i < this.keyState.length; i++){
-					if(this.keyState[i]){
-						console.debug(i);
+				
+				//this will show us what keys are down
+				if(DEBUG){
+					for(var i=0;i < this.keyState.length; i++){
+						if(this.keyState[i]){
+							console.debug(i);
+						}
 					}
 				}
-				window.setTimeout("GameEngine.gameLoop()",1000);
+				
+				
+				WorldMap.drawMap();
+				
+				window.setTimeout("GameEngine.gameLoop()",100);
 			}
 		
 		};
 		
 		$(document).ready(function(){
-			$('#divMain').append("<h4>Welcome to the world<\/h4>");
+			$('#divMessages').append($("<span class='message'>Welcome to the world<\/span><br\/>").hide().fadeIn(1000).fadeOut(10000));
 			
 			$(document).on('keydown', MoveHandlers.keydown);
 			$(document).on('keyup', MoveHandlers.keyup);
@@ -149,13 +230,17 @@
 		</script>
 	</head>
 	<body>
-		<div id='divMain'>
-			<div id='divMessages'>
-			
+		<div id='divWrapper'>
+			<div id="divMessageWrapper">
+				<small>Messages:</small><br/>
+				<div id='divMessages'>
+					
+				</div>
 			</div>
 			<div id='divMap'>
 			
 			</div>
+			<div id='divClear'></div>
 		</div>
 	</body>
 </html>
