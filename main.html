@@ -58,30 +58,68 @@
 			y: 5,
 			name: "Player",
 			moveSpeed: 1,
-			visionDistance: 3
+			visionDistance: 3,
+			lastX: 5,
+			lastY: 5
 		};
 		
 		var MoveHandlers = {
+		
+			terrainAlert: function(index){
+			
+			},
+			
+			impassableTerrainAlert: function(index){
+				GameEngine.postMessage(WorldMap.tileMessage[index]);
+			},
 			
 			movePlayer: function(dir){
+				
+				var dx = 0;
+				var dy = 0;
 			
 				if(dir=='left'){
 					if(Player.x-Player.moveSpeed >= 0){
-						Player.x-=Player.moveSpeed;
+						if(WorldMap.tileMoveMask[WorldMap.map[Player.y][Player.x-Player.moveSpeed]]){
+							dx-=Player.moveSpeed;
+							GameEngine.postMessage("Moving left");
+						}else{
+							this.impassableTerrainAlert(WorldMap.map[Player.y][Player.x-Player.moveSpeed]);
+						}
 					}
 				}else if(dir=='up'){
 					if(Player.y-Player.moveSpeed >= 0){
-						Player.y-=Player.moveSpeed;
+						if(WorldMap.tileMoveMask[WorldMap.map[Player.y-Player.moveSpeed][Player.x]]){
+							dy-=Player.moveSpeed;
+							GameEngine.postMessage("Moving up");
+						}else{
+							this.impassableTerrainAlert(WorldMap.map[Player.y-Player.moveSpeed][Player.x]);
+						}
 					}
 				}else if(dir=='right'){
 					if(Player.x+Player.moveSpeed < WorldMap.width){
-						Player.x+=Player.moveSpeed;
+						if(WorldMap.tileMoveMask[WorldMap.map[Player.y][Player.x+Player.moveSpeed]]){
+							dx+=Player.moveSpeed;
+							GameEngine.postMessage("Moving right");
+						}else{
+							this.impassableTerrainAlert(WorldMap.map[Player.y][Player.x+Player.moveSpeed]);
+						}
 					}
 				}else if(dir=='down'){
 					if(Player.y+Player.moveSpeed < WorldMap.height){
-						Player.y+=Player.moveSpeed;
+						if(WorldMap.tileMoveMask[WorldMap.map[Player.y+Player.moveSpeed][Player.x]]){
+							dy+=Player.moveSpeed;
+							GameEngine.postMessage("Moving down");
+						}else{
+							this.impassableTerrainAlert(WorldMap.map[Player.y+Player.moveSpeed][Player.x]);
+						}
 					}
 				}
+				
+				Player.lastX = Player.x;
+				Player.lastY = Player.y;
+				Player.x += dx;
+				Player.y += dy;
 			
 			},
 			
@@ -95,22 +133,18 @@
 					case 37: //left
 						MoveHandlers.movePlayer("left");
 						GameEngine.keyState[0] = true;
-						GameEngine.postMessage("Moving left");
 						break;
 					case 38: //up
 						MoveHandlers.movePlayer("up");
 						GameEngine.keyState[1] = true;
-						GameEngine.postMessage("Moving up");
 						break;
 					case 39: //right
 						MoveHandlers.movePlayer("right");
 						GameEngine.keyState[2] = true;
-						GameEngine.postMessage("Moving right");
 						break;
 					case 40: //down
 						MoveHandlers.movePlayer("down");
 						GameEngine.keyState[3] = true;
-						GameEngine.postMessage("Moving down");
 						break;
 					default:
 						break;
@@ -151,6 +185,10 @@
 			map: [],
 			
 			tiles: ["^","-","~"],
+			tileMoveMask: [false, true, true],
+			tileMessage:["Giant mountain ranges block your way",
+						 "Great plains stretch out around you",
+						 "The water is a nice change of scenery..."],
 			
 			init: function(){
 				for(var i=0;i < this.height;i++){
